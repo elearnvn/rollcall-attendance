@@ -5,55 +5,37 @@ services:
     image: postgres:9.6-alpine
     environment:
       POSTGRES_PASSWORD: password
-
-  redis:
-    image: redis:3-alpine
-
-  minio:
-    image: minio/minio
-    command: /bin/sh -c "mkdir -p /data/bucket && minio server /data"
-    entrypoint: ''
-    environment:
-      MINIO_DOMAIN: minio.rollcall-attendance.docker
-      MINIO_ACCESS_KEY: dev-access-key
-      MINIO_SECRET_KEY: dev-secret-key
-      VIRTUAL_HOST: bucket.minio.rollcall-attendance.docker
-
   web:
     build:
       context: .
     links:
       - db
-      - redis
-      - minio
     environment: &ENV
-      RAILS_ENV: development
+      RAILS_ENV: production 
       ROLLCALL_ROLE: web
       VIRTUAL_HOST: rollcall.docker
       DATABASE_URL: postgres://postgres:password@db:5432/rollcall_dev
-      REDIS_URL: redis://redis:6379
+      REDIS_URL: redis://10.0.4.15:6379
       # SENTRY_DSN: 'https://foo:bar@sentry.insops.net/35'
       SECRET_KEY_BASE: 'GSOC6DGMsvlLtDkaAagn7HBtxO4FJZECVYVuceZV7LMGMaYTIBXbK5OLa3UC'
       RESQUE_USER: 'admin'
       RESQUE_PASS: 'changeme'
-      AWS_ACCESS_KEY_ID: dev-access-key
-      AWS_SECRET_ACCESS_KEY: dev-secret-key
-      AWS_REGION: 'us-east-1'
-      AWS_BUCKET: bucket
-      AWS_S3_ENDPOINT: http://minio.rollcall-attendance.docker
-      LTI_KEY: '12345'
-      LTI_SECRET: 'secret'
+      AWS_ACCESS_KEY_ID:  AKIA5CVS6BMFHY4H43PK
+      AWS_SECRET_ACCESS_KEY: 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
+      AWS_REGION: 'ap-southeast-1'
+      AWS_BUCKET: canvas-omt-vn
+      AWS_S3_ENDPOINT: s3.ap-southeast-1.amazonaws.com 
+      LTI_KEY: '1BQjSm3JXjPRrqIIFWUhKgLD4ksBocQi'
+      LTI_SECRET: 'dIaFTjNxzuHkmk5BfUgyw0Kd0eMDKzkg'
       LTI_REQUIRE_CANVAS: 'true'
-    external_links:
-      - ${PROXY_CONTAINER:-dinghy_http_proxy}:bucket.minio.rollcall-attendance.docker
+    ports:
+        - "8000:80"
 
   work:
     build:
       context: .
     links:
       - db
-      - redis
-      - minio
     environment:
       <<: *ENV
       ROLLCALL_ROLE: 'worker'
